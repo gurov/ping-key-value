@@ -6,7 +6,7 @@ const ping = require("net-ping");
 const netPingPlus = require('./net-ping-plus');
 netPingPlus.run();
 
-const HOST_IP = '203.205.239.154';
+const HOST_IP = '213.59.253.7';
 const DEBUG_DELAY_ON = false; // pause before sending each ping
 const DEBUG_DELAY = 300; 	// milliseconds 
 const FIND_KEY_TIME = 2000; // milliseconds
@@ -35,9 +35,10 @@ const sendToHost = (key, value, creationResponse) => {
             delete reqStore[resKey];
         }
 
-        if (keysToDelete[key]) {
-            keysToDelete[key].forEach(r => r.status(200).send('Key deleted'))
-            delete keysToDelete[key];
+        if (keysToDelete[resKey]) {
+            keysToDelete[resKey].responses.forEach(r => r.status(200).send('Key deleted'));
+            clearTimeout(keysToDelete[resKey].timeoutID);
+            delete keysToDelete[resKey];
         } else {
             if (DEBUG_DELAY_ON) {
                 setTimeout(() => sendToHost(resKey, resValue), DEBUG_DELAY);
@@ -48,7 +49,6 @@ const sendToHost = (key, value, creationResponse) => {
     });
 }
 
-// Обработка POST запросов
 app.post('/:key', (req, res) => {
     const key = req.params.key;
     const payload = req.body;
@@ -60,11 +60,9 @@ app.post('/:key', (req, res) => {
     sendToHost(key, payload, res);
 });
 
-// Обработка GET запросов
 app.get('/:key', (req, res) => {
 
     const key = req.params.key;
-
     // console.log('!GET', key);
 
     if (!key) {
@@ -92,9 +90,14 @@ app.delete('/:key', (req, res) => {
     }
 
     if (!keysToDelete[key]) {
-        keysToDelete[key] = [res];
+        keysToDelete[key] = {
+            responses: [res],
+            timeoutID: setTimeout(() => {
+                res.status(404).send('Not Found');
+            }, FIND_KEY_TIME)
+        };
     } else {
-        keysToDelete[key].push(res);
+        keysToDelete[key].responses.push(res);
     }
 });
 

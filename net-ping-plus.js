@@ -8,7 +8,6 @@ const raw = require ("raw-socket");
 
 const run = () => {
 
-  
     ping.Session.prototype.pingHost = function (target, key, payload, callback) {
         var id = key || this._generateId ();
         if (! id) {
@@ -109,7 +108,6 @@ const run = () => {
             } else {
                 if (req.type == 0) {
                     
-                    console.log('!req', req.id, req.buffer.slice(8).toString ());
                     req.callback (null, req.target,
                             req.sent, new Date (), req.id, req.buffer.slice(8).toString());
                 } else if (req.type == 3) {
