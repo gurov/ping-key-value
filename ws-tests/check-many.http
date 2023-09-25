@@ -1,0 +1,7 @@
+GET http://localhost:4242/101
+
+###
+GET http://localhost:4242/101
+
+###
+GET http://localhost:4242/102
